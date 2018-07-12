@@ -150,7 +150,7 @@ contract Casino is usingOraclize {
 
    /// @notice Sends the corresponding Ether to each winner then deletes all the
    /// players for the next game and resets the `totalBet` and `numberOfBets`
-   function distributePrizes() onEndGame {
+   function distributePrizes() private onEndGame {
       uint winnerEtherAmount = totalBet / numberBetPlayers[numberWinner].length; // How much each winner gets
 
       // Loop through all the winners to send the corresponding prize for each one
