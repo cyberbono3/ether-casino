@@ -1,6 +1,8 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.18;
 
-import "github.com/oraclize/ethereum-api/oraclizeAPI.sol";
+
+import "installed_contracts/oraclize-api/contracts/usingOraclize.sol";
+
 
 /*   
      https://consensys.github.io/smart-contract-best-practices/known_attacks/
@@ -25,13 +27,18 @@ import "github.com/oraclize/ethereum-api/oraclizeAPI.sol";
 
 
 
+
+
+
 */
 
 
 
 
 contract Casino is usingOraclize {
+
    address owner;
+
 
    // The minimum bet a user has to make to participate in the game
    uint public minimumBet = 1 ; // 1 ether
@@ -42,15 +49,17 @@ contract Casino is usingOraclize {
    // The total number of bets the users have made
    uint public numberOfBets;
 
-   // The maximum amount of bets can be made for each game
+  // The maximum amount of bets can be made for each game
    uint public maxAmountOfBets = 10;
 
-   // The max amount of bets that cannot be exceeded to avoid excessive gas consumption
+
+// The max amount of bets that cannot be exceeded to avoid excessive gas consumption
    // when distributing the prizes and restarting the game
    uint public constant LIMIT_AMOUNT_BETS = 100;
 
    // The number that won the last game
    uint public numberWinner;
+
 
    // Array of players
    address[] public players;
@@ -69,17 +78,19 @@ contract Casino is usingOraclize {
    /// @notice Constructor that's used to configure the minimum bet per game and the max amount of bets
    /// @param _minimumBet The minimum bet that each user has to make in order to participate in the game
    /// @param _maxAmountOfBets The max amount of bets that are required for each game
-   constructor(uint _minimumBet, uint _maxAmountOfBets){
+ constructor (uint _minimumBet, uint _maxAmountOfBets)  public {
+
+     
       owner = msg.sender;
 
-      if(_minimumBet > 0) minimumBet = _minimumBet;
-      if(_maxAmountOfBets > 0 && _maxAmountOfBets <= LIMIT_AMOUNT_BETS)
-         maxAmountOfBets = _maxAmountOfBets;
+     if(_minimumBet > 0) minimumBet = _minimumBet;
+     if(_maxAmountOfBets > 0 && _maxAmountOfBets <= LIMIT_AMOUNT_BETS)
+      maxAmountOfBets = _maxAmountOfBets;
 
       // Set the proof of oraclize in order to make secure random number generations
      //  Encountered issue by calling the constructor, commented setProof then works fine
      // 
-     // oraclize_setProof(proofType_Ledger);
+     oraclize_setProof(proofType_Ledger);
    }
 
    /// @notice Check if a player exists in the current game
@@ -87,7 +98,8 @@ contract Casino is usingOraclize {
    /// @return bool Returns true is it exists or false if it doesn't
    function checkPlayerExists(address player) returns(bool){
       if(playerBetsNumber[player] > 0) return true;
-      else return false;
+      else 
+      return false;
      }
 
    /// @notice To bet for a number by sending Ether
@@ -103,8 +115,8 @@ contract Casino is usingOraclize {
       // Check that the number to bet is within the range
       require(numberToBet >= 1 && numberToBet <= 10);
 
-      // Check that the amount paid is bigger or equal the minimum bet
-      require(msg.value >= minimumBet);
+      // Check that the amount paid is t
+      require(msg.value >= minimumBet);      
 
       // Set the number bet for that player
       playerBetsNumber[msg.sender] = numberToBet;
@@ -135,8 +147,12 @@ contract Casino is usingOraclize {
    /// @param _queryId The query id that was generated to proofVerify
    /// @param _result String that contains the number generated
    /// @param _proof A string with a proof code to verify the authenticity of the number generation
-   function __callback( bytes32 _queryId, string _result, bytes _proof) onEndGame {
-       //oraclize_randomDS_proofVerify(_queryId, _result, _proof) 
+    function __callback( 
+     bytes32 _queryId, 
+     string _result, 
+     bytes _proof
+     ) oraclize_randomDS_proofVerify(_queryId, _result, _proof) onEndGame {
+       
     
 
       // Checks that the sender of this callback was in fact oraclize
@@ -159,10 +175,15 @@ contract Casino is usingOraclize {
 
       // Delete all the players for each number
       for(uint j = 1; j <= 10; j++){
-         numberBetPlayers[j].length = 0;
+         if (numberBetPlayers[j].length > 0)  delete numberBetPlayers[j];
       }
+         
+      
 
       totalBet = 0;
       numberOfBets = 0;
    }
+
+
+
 }
